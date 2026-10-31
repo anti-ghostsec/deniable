@@ -1,6 +1,6 @@
-# This crate is copied, unchanged, into Torus, The Sentinel Protocol, FerroOS
-# and Enclave. Change it in one place and copy the folder to the others, so
-# the copies never drift apart. It inherits nothing from any workspace.
+# Torus, The Sentinel Protocol, FerroOS and Enclave depend on this crate by
+# git tag; it lives only here, so there are no copies to drift apart. It
+# inherits nothing from any workspace.
 [package]
 name = "deniable"
 description = "Deniable storage: encrypted volumes hidden in a container of random bytes"
