@@ -1,0 +1,16 @@
+# Building blocks for an app's own encrypted vault file: the app keeps its
+# file format, this crate does the parts that are easy to get wrong. It
+# inherits nothing from any workspace.
+[package]
+name = "vaultkit"
+description = "Pieces for a password-sealed vault file: bounded Argon2id, XChaCha20-Poly1305 with the header as AAD, private atomic writes"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
+chacha20poly1305 = { version = "0.10", default-features = false, features = ["alloc"] }
+getrandom = { version = "0.2", features = ["std"] }
+zeroize = "1"

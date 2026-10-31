@@ -3,4 +3,4 @@
 # workspace, so a project can depend on either one by git tag.
 [workspace]
 resolver = "2"
-members = ["crates/deniable"]
+members = ["crates/deniable", "crates/vault"]
