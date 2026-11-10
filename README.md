@@ -16,8 +16,8 @@ macOS and Android.
 
 ```toml
 [dependencies]
-deniable = { git = "https://github.com/anti-ghostsec/deniable", tag = "v0.1.0" }
-vaultkit = { git = "https://github.com/anti-ghostsec/deniable", tag = "v0.1.0" }
+deniable = { git = "https://github.com/anti-ghostsec/deniable", tag = "v0.2.0" }
+vaultkit = { git = "https://github.com/anti-ghostsec/deniable", tag = "v0.2.0" }
 ```
 
 To try a change here in a project before tagging it, point the project at
@@ -26,6 +26,19 @@ this folder for one command, without editing its `Cargo.toml`:
 ```sh
 cargo --config 'patch."https://github.com/anti-ghostsec/deniable".deniable.path="../deniable/crates/deniable"' test
 ```
+
+## Versions
+
+- **v0.2.0** (`deniable`): a volume's two superblocks are told apart by a
+  marker that cycles through three values instead of a count of saves, which
+  told someone with a decoy password how often anything was saved. Containers
+  from v0.1.0 open as they are and switch at their next save; once saved by
+  v0.2.0 they can't be read by v0.1.0, so every project that shares
+  containers moves together. A write, resize or save that fails part-way
+  leaves a volume that opens (the old contents or the new). Costs outside
+  8 MiB to 1 GiB, 1 to 16 passes and 1 to 4 lanes are refused before the
+  device is touched, and container files are created private (0600).
+- **v0.1.0**: the first tagged version.
 
 ## `deniable`
 
