@@ -4,3 +4,11 @@
 [workspace]
 resolver = "2"
 members = ["crates/deniable", "crates/vault"]
+
+# Debug info: file and line numbers for our code, none for dependencies,
+# or the build folder grows by tens of gigabytes.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
