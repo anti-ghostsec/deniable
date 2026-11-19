@@ -1,6 +1,6 @@
-# Storage crates shared by Torus, The Sentinel Protocol, FerroOS, Enclave and
-# the desktop apps. Each crate stands alone and inherits nothing from this
-# workspace, so a project can depend on either one by git tag.
+# Storage crates meant to be shared between projects. Each crate stands alone
+# and inherits nothing from this workspace, so a project can depend on either
+# one by git tag.
 [workspace]
 resolver = "2"
 members = ["crates/deniable", "crates/vault"]

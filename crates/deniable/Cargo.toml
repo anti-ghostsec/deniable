@@ -1,10 +1,10 @@
-# Torus, The Sentinel Protocol, FerroOS and Enclave depend on this crate by
-# git tag; it lives only here, so there are no copies to drift apart. It
-# inherits nothing from any workspace.
+# The maintained copy of this crate. Enclave carries a vendored copy (see the
+# README); nothing else depends on it yet. It inherits nothing from any
+# workspace.
 [package]
 name = "deniable"
 description = "Deniable storage: encrypted volumes hidden in a container of random bytes"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 publish = false

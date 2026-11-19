@@ -1,8 +1,16 @@
 # deniable
 
-Storage crates shared by Torus, The Sentinel Protocol, FerroOS, Enclave and
-the desktop apps. They used to be copied from project to project; now each
-project depends on a tagged version here.
+Storage crates meant to be shared between projects, so that fixes land in
+one place.
+
+**Who uses them today.** Only Enclave, and it doesn't depend on this
+repository: it keeps a vendored copy of `deniable` in `native/deniable`
+(this repository is private, and Enclave's public CI can't fetch it). That
+copy is kept byte-identical to a tag here and carries the same version
+number, so `diff -r crates/deniable ../Enclave/native/deniable` shows any
+drift. Torus, The Sentinel Protocol and FerroOS don't use either crate;
+the copies of `deniable` they once had are gone. Nothing uses `vaultkit`
+yet.
 
 | Crate | Folder | What it's for |
 |---|---|---|
@@ -16,8 +24,8 @@ macOS and Android.
 
 ```toml
 [dependencies]
-deniable = { git = "https://github.com/anti-ghostsec/deniable", tag = "v0.2.0" }
-vaultkit = { git = "https://github.com/anti-ghostsec/deniable", tag = "v0.2.0" }
+deniable = { git = "https://github.com/anti-ghostsec/deniable", tag = "v0.3.0" }
+vaultkit = { git = "https://github.com/anti-ghostsec/deniable", tag = "v0.3.0" }
 ```
 
 To try a change here in a project before tagging it, point the project at
@@ -29,6 +37,28 @@ cargo --config 'patch."https://github.com/anti-ghostsec/deniable".deniable.path=
 
 ## Versions
 
+- **v0.3.0** (`deniable`): two fixes.
+  - **A failed unlock could destroy the whole container.** When a volume
+    had lost one of its two superblocks and the container had no free
+    place for a new one, unlocking it failed with `Full` but left a
+    half-unlocked volume behind. The next save wrote that volume's
+    superblock to block 0, over the container's salt, after which no
+    password opened anything. A failed unlock now forgets everything it
+    unlocked and gives back the blocks it claimed, and a save refuses to
+    write a superblock to block 0.
+  - **Cover writes leaked hidden-volume activity.** Their number was
+    proportional to all the blocks a save wrote, hidden volumes' included,
+    so someone with only a lower password could compare two copies of the
+    disk and watch the unexplained changes grow with hidden writes. Now
+    each save pads the number of blocks it changed to a target drawn at
+    random between the cover budget and twice it, without regard to what
+    was written. A save smaller than the budget looks the same whether or
+    not a hidden volume wrote; a larger one shows its size.
+    `set_cover(per_write, min)` is now `set_cover(budget)`, with a default
+    of `DEFAULT_COVER` (256 blocks, 1 MiB per save).
+
+  The on-disk format is unchanged: containers move between v0.2.0 and
+  v0.3.0 freely.
 - **v0.2.0** (`deniable`): a volume's two superblocks are told apart by a
   marker that cycles through three values instead of a count of saves, which
   told someone with a decoy password how often anything was saved. Containers
@@ -42,9 +72,8 @@ cargo --config 'patch."https://github.com/anti-ghostsec/deniable".deniable.path=
 
 ## `deniable`
 
-Moved here unchanged from FerroOS (commit `2132e92`); the copies in Torus,
-The Sentinel Protocol and Enclave were identical. The on-disk format is the
-same, so existing containers open as before.
+Moved here unchanged from FerroOS (commit `2132e92`). The on-disk format is
+the same, so existing containers open as before.
 
 **What it guarantees.** Without the right password a container is
 indistinguishable from random bytes: nothing says how many volumes it holds,
@@ -53,14 +82,18 @@ one that was never set. Each volume's key comes from Argon2id (or is given
 directly), blocks are sealed with XChaCha20-Poly1305 and bound to their
 position, saves survive a power cut (two superblocks, written alternately),
 and writes never overwrite live data. Volumes can be layered, so giving up a
-lower password leaves the ones above invisible. Cover writes make two copies
-of a disk taken at different times hard to tell apart from a lower volume's
-own use.
+lower password leaves the ones above invisible. Each save pads the blocks it
+changed to a random target between the cover budget and twice it, so two
+copies of a disk taken around a save show the same number of changes whether
+or not a hidden volume wrote, as long as the save was smaller than the
+budget.
 
 **What it doesn't.** Writing with only a lower volume unlocked can destroy
-the volumes above it. Cover writes hide changes only as well as they can be
-explained by the lower volumes; flash controllers can keep old blocks the
-app can't reach. Someone who can write to the disk can roll a block back,
+the volumes above it. A save larger than the cover budget shows its real
+size, and if the lower volumes didn't write that much, someone with their
+password learns that something else did: keep hidden-volume saves smaller
+than the budget, or raise it. Cover writes show that the container is in use. Flash controllers
+can keep old blocks the app can't reach. Someone who can write to the disk can roll a block back,
 which is only noticed if it breaks the volume. The container's size, and
 the fact that it exists, are visible. The Argon2id cost is given by the app,
 not read from the container, so it must be the same every time.
